@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Life Planner</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #f8f7f5;
+  --card: rgba(255,255,255,0.7);
+  --text: #1f1f1f;
+  --muted: #8a8a8a;
+  --accent: #7c5cff;
+  --accent-soft: #ede9ff;
+  --border: rgba(0,0,0,0.06);
+  --radius: 18px;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg,#f8f7f5,#f1f0ec);
+  color: var(--text);
+}
+
+/* HEADER */
+header {
+  position: sticky;
+  top:0;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:18px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.week-nav button {
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer;
+}
+
+/* LAYOUT */
+.container { max-width:1200px; margin:auto; padding:20px; }
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* HABITS */
+.habit-bar { display:flex; gap:10px; margin-bottom:20px; }
+.habit-card { padding:12px; }
+
+/* WATER */
+.glass { font-size:1.4rem; opacity:.3; cursor:pointer; }
+.glass.filled { opacity:1; }
+
+/* DAYS */
+.days-grid {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+}
+
+.day-card { padding:10px; }
+
+.day-name { font-weight:600; margin-bottom:6px; }
+
+/* TASK */
+.task { display:flex; gap:6px; align-items:center; }
+.task.done span { text-decoration:line-through; color:var(--muted); }
+
+/* INPUT */
+input {
+  width:100%;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  padding:5px;
+}
+
+input:focus {
+  outline:none;
+  border-color:var(--accent);
+}
+
+/* BUTTON */
+.btn {
+  margin-top:10px;
+  background: var(--accent);
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Life Planner</h2>
+  <div class="week-nav">
+    <button onclick="shiftWeek(-1)">‹</button>
+    <span id="weekLabel"></span>
+    <button onclick="shiftWeek(1)">›</button>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="habit-bar">
+  <div class="card habit-card">
+    Water:
+    <div id="water"></div>
+  </div>
+</div>
+
+<div id="days" class="days-grid"></div>
+
+</div>
+
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+let water = Array(8).fill(false);
+let tasks = {};
+
+function renderWater(){
+  const el=document.getElementById('water');
+  el.innerHTML='';
+  water.forEach((w,i)=>{
+    const g=document.createElement('span');
+    g.textContent='🥛';
+    g.className='glass'+(w?' filled':'');
+    g.onclick=()=>{water[i]=!water[i];renderWater();}
+    el.appendChild(g);
+  });
+}
+
+function renderDays(){
+  const el=document.getElementById('days');
+  el.innerHTML='';
+  DAYS.forEach(d=>{
+    if(!tasks[d]) tasks[d]=[];
+    const card=document.createElement('div');
+    card.className='card day-card';
+
+    const list = tasks[d].map((t,i)=>`
+      <div class="task ${t.done?'done':''}">
+        <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${d}',${i})">
+        <span>${t.text}</span>
+      </div>
+    `).join('');
+
+    card.innerHTML=`
+      <div class="day-name">${d}</div>
+      ${list}
+      <input placeholder="New task..." onkeydown="addTask(event,'${d}')">
+    `;
+
+    el.appendChild(card);
+  });
+}
+
+function addTask(e,day){
+  if(e.key==='Enter' && e.target.value){
+    tasks[day].push({text:e.target.value,done:false});
+    e.target.value='';
+    renderDays();
+  }
+}
+
+function toggleTask(day,i){
+  tasks[day][i].done=!tasks[day][i].done;
+  renderDays();
+}
+
+function shiftWeek(){}
+
+renderWater();
+renderDays();
+</script>
+
+</body>
+</html>
